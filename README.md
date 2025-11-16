@@ -24,6 +24,7 @@ If you have problem about installing **cocoapi**, come [here](https://github.com
 * [CFOCNet_demo.ipynb](CFOCNet_demo.ipynb) This notebook tests the detail implementations of CFOCNet, giving insights such as how the size of each tensor changes across each stage.
 * [model](model) This directory contains all related modules of our CFOCNet implementation
 * [Eval_Result](Eval_Result) This directory contains the ideal results during evaluation stage, where an example's predicted count and the density map aligns with the groundtruth.
+* **[FSC147_USAGE.md](FSC147_USAGE.md)** Complete guide for using FSC-147 dataset with this repository
 ## Data Preparation
 
 ### Option 1: FSC-147 Dataset (Recommended for Few-Shot Counting)

@@ -1,0 +1,21 @@
+train:
+  epochs: 5
+  batch_size: 12
+  num_workers: 2
+  ssim_loss: 1.0e-5
+  references: 3  # FSC-147 provides 3 exemplar boxes per image
+  result_path: ./results
+
+data:
+  dataset: fsc147  # Specify which dataset to use: 'coco' or 'fsc147'
+  data_path: /path/to/FSC147_384_V2  # Update this path to your FSC-147 dataset location
+  num_references: 3  # Number of reference/exemplar images (3 for FSC-147, 5 for COCO)
+
+optimizer:
+  lr: 1.0e-4
+
+eval:
+  checkpoint: ./ckpt/model.ckpt
+  sample: true
+  image_folder: ./image_folder
+  

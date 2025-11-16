@@ -25,6 +25,25 @@ If you have problem about installing **cocoapi**, come [here](https://github.com
 * [model](model) This directory contains all related modules of our CFOCNet implementation
 * [Eval_Result](Eval_Result) This directory contains the ideal results during evaluation stage, where an example's predicted count and the density map aligns with the groundtruth.
 ## Data Preparation
+
+### Option 1: FSC-147 Dataset (Recommended for Few-Shot Counting)
+We now support FSC-147 dataset, which is specifically designed for few-shot object counting. </br>
+
+1. Download FSC-147 dataset from [here](https://github.com/cvlab-stonybrook/LearningToCountEverything)
+2. The dataset structure should be:
+````
+$PATH_TO_FSC147/
+├──── images_384_VarV2/
+│    └──── 6135 images (.jpg)
+│
+├──── annotation_FSC147_384.json
+├──── Train_Test_Val_FSC_147.json
+└──── ImageClasses_FSC147.txt
+````
+3. Update the `data_path` in [config_fsc147.yaml](configs/config_fsc147.yaml) to point to your FSC-147 dataset directory
+4. No preprocessing is required - FSC-147 provides exemplar boxes directly in the annotations
+
+### Option 2: COCO Dataset 2017 (Original Implementation)
 We train and evaluate our methods on COCO dataset 2017. </br>
 Please follow the instruction [here](https://gist.github.com/mkocabas/a6177fc00315403d31572e17700d7fd9) to download the COCO dataset 2017 </br>
 structure used in our code will be like : </br>
@@ -93,34 +112,62 @@ $PATH_TO_DATASET/
 ````
 
 ## Training
-* Please go to [config.yaml](configs/config.yaml) to change the configs under "train". </br>
-* To setup the training process, model configurations such as **epochs**, **batch_size**, and **result_path** can be tuned, all of which are stored in config.yaml</br>
-* Modify run.sh to setup the training process ```python main.py --config=config.yaml --doc=doc_name --train```.
-* doc_name can be any string you want.
-* Execute the bash script through the below command:
+
+### Training with FSC-147 Dataset
+* Use [config_fsc147.yaml](configs/config_fsc147.yaml) for FSC-147 dataset configuration
+* Update the `data_path` in the config file to point to your FSC-147 dataset directory
+* Model configurations such as **epochs**, **batch_size**, and **result_path** can be tuned in config_fsc147.yaml
+* Run training with:
 ````
 cd CODE_DIRECTORY
-bash run.sh
+python main.py --config=config_fsc147.yaml --doc=fsc147_training --train
 ````
-* After running the code, you will find your training logs under CODE_DIRECTORY/exp/logs/doc_name
+* After running the code, you will find your training logs under CODE_DIRECTORY/exp/logs/fsc147_training
+
+### Training with COCO Dataset (Original)
+* Use [config.yaml](configs/config.yaml) for COCO dataset configuration
+* Update the `data_path` in config.yaml to your COCO dataset path
+* Model configurations such as **epochs**, **batch_size**, and **result_path** can be tuned in config.yaml
+* Run training with:
+````
+cd CODE_DIRECTORY
+python main.py --config=config.yaml --doc=coco_training --train
+````
+* After running the code, you will find your training logs under CODE_DIRECTORY/exp/logs/coco_training
 
 ## Testing
-* Please go to [config.yaml](configs/config.yaml) to change the configs under "eval". </br>
-* To setup the testing process, the configurations such as **checkpoint**, **sample**, and **image_folder** can be tuned, all of which are stored in config.yaml. </br>
-* Modify run.sh to setup the testing process ```python main.py --config=config.yaml --doc=doc_name --test```
-* doc_name can be any string you want.
-* Execute the bash script through the below command
+
+### Testing with FSC-147 Dataset
+* Update the `checkpoint` path in [config_fsc147.yaml](configs/config_fsc147.yaml)
+* The testing will use the pre-defined test split from FSC-147 dataset
+* Run testing with:
 ````
 cd CODE_DIRECTORY
-bash run.sh
+python main.py --config=config_fsc147.yaml --doc=fsc147_testing --test
+````
+
+### Testing with COCO Dataset (Original)
+* Update the `checkpoint` path in [config.yaml](configs/config.yaml)
+* Run testing with:
+````
+cd CODE_DIRECTORY
+python main.py --config=config.yaml --doc=coco_testing --test
 ````
 * After running the code, you will find your testing logs under "CODE_DIRECTORY/exp/logs/doc_name".
 
 ## Implementation Details
 * The runner architecture is from [NCSNv2](https://github.com/ermongroup/ncsnv2).
-* We crop 500 reference images for each categories.
 * For query image, instead of random crop, we resize it with aspect ratio and padding to 256 x 256.
-* The default setting in our code is 5-shot learning, where each query image has 5 reference images to learn. 
+
+### COCO Dataset Implementation
+* We crop 500 reference images for each categories from COCO training set.
+* The default setting is 5-shot learning, where each query image has 5 reference images to learn.
+
+### FSC-147 Dataset Implementation
+* FSC-147 provides 3 exemplar bounding boxes per image as reference objects.
+* The default setting is 3-shot learning (matching FSC-147's annotation format).
+* No preprocessing step needed - exemplars are extracted directly from annotations during training.
+* Uses point annotations to generate density maps for supervision. 
 
 ## Acknowledgement
 * Great thanks to the contributive discussions on the reproduction details with </br>

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from data.coco import CountingkDataset
+from data.fsc147 import FSC147Dataset
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from model.CFOCNet import CFOCNet
@@ -21,8 +22,17 @@ class Runner:
     def train(self):
 
         # Import the dataset
-        dataset = CountingkDataset(self.config,'train')
-        data_loader = DataLoader(dataset,self.config.train.batch_size,shuffle=True,pin_memory=True,num_workers=self.config.train.num_workers)
+        # Check which dataset to use
+        dataset_type = getattr(self.config.data, 'dataset', 'coco')  # Default to 'coco' for backward compatibility
+        
+        if dataset_type == 'fsc147':
+            dataset = FSC147Dataset(self.config, 'train', num_shots=self.config.data.num_references)
+            logging.info("Using FSC-147 dataset for training")
+        else:
+            dataset = CountingkDataset(self.config, 'train')
+            logging.info("Using COCO dataset for training")
+        
+        data_loader = DataLoader(dataset, self.config.train.batch_size, shuffle=True, pin_memory=True, num_workers=self.config.train.num_workers)
         print("dataset length ", len(dataset))
 
         net = CFOCNet()
@@ -88,9 +98,19 @@ class Runner:
         net.load_state_dict(checkpoint)
         net.eval()
 
-       
-        dataset = CountingkDataset(self.config,'train',[3])
-        data_loader = DataLoader(dataset,self.config.train.batch_size,pin_memory=True,num_workers=self.config.train.num_workers)
+        # Check which dataset to use
+        dataset_type = getattr(self.config.data, 'dataset', 'coco')  # Default to 'coco' for backward compatibility
+        
+        if dataset_type == 'fsc147':
+            # For FSC-147, use 'test' split for evaluation
+            dataset = FSC147Dataset(self.config, 'test', num_shots=self.config.data.num_references)
+            logging.info("Using FSC-147 dataset for testing")
+        else:
+            # For COCO, use fold [3] as test set
+            dataset = CountingkDataset(self.config, 'train', [3])
+            logging.info("Using COCO dataset for testing")
+        
+        data_loader = DataLoader(dataset, self.config.train.batch_size, pin_memory=True, num_workers=self.config.train.num_workers)
 
         mae_sum = 0
         mse_sum = 0
